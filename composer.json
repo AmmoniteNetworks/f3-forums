@@ -1,0 +1,27 @@
+{
+    "name": "ammonitenetworks/f3-forums",
+    "type": "component",
+    "description": "Forums component for the F3-framework",
+    "keywords": ["F3","RAD", "Forum"],
+    "homepage": "https://github.com/ammonitenetworks/f3-forums",
+    "license": "GPL",
+    "authors": [
+        {
+            "name": "Chris French",
+            "email": "chris@ammonitenetworks.com",
+            "homepage": "http://ammonitenetworks.com",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.4.0",
+        "dioscouri/f3-lib": "dev-master",
+        "dioscouri/f3-admin": "dev-master",
+        "dioscouri/f3-search": "dev-master"
+    },
+    "autoload": {
+        "psr-0": {
+            "Forums": "src/"
+        }
+    }    
+}
