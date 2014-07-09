@@ -1,15 +1,13 @@
 <?php 
 namespace Forums\Models;
 
-class Posts extends \Dsc\Mongo\Collections\Describable
+class Comments extends \Dsc\Mongo\Collection
 {
-    use \Dsc\Traits\Models\Publishable;
-    
-    public $copy;
+   use \Dsc\Traits\Models\Ancestors;
 
-    protected $__collection_name = 'forums.posts';
+    protected $__collection_name = 'forums.comments';
 
-    protected $__type = 'forums.posts';
+    protected $__type = 'forums.comments';
 
     protected $__config = array(
         'default_sort' => array(
@@ -75,77 +73,68 @@ class Posts extends \Dsc\Mongo\Collections\Describable
             $this->setCondition('copy', $key);
         }
         
-        $this->publishableFetchConditions();
+        $this->ancestorsFetchConditions();
+      
         
         return $this;
     }
-
-    public function validate()
+    
+    /**
+     *
+     * @param string $unique
+     * @return string
+     */
+    public function ancestorsGenerateSlug($unique = true)
     {
-        if (empty($this->title))
-        {
-            $this->setError('Title is required');
-        }
+    	
+    	$slug = \Web::instance()->slug($this->title);
+    
+    	if ($unique)
+    	{
+    		$base_slug = $slug;
+    		$n = 1;
+    		$parent = null;
+    		if (isset($this->parent) && $this->parent != 'null')
+    		{
+    			$parent = $this->parent;
+    		}
+    
+    		while ($this->ancestorsSlugExists($slug, $parent))
+    		{
+    			$slug = $base_slug . '-' . $n;
+    			$n++;
+    		}
+    	}
+    
+    	return $slug;
+    }
+
+    public function beforeValidate()
+    {
+       
+    	$this->ancestorsBeforeValidate();
         
-        if (empty($this->slug))
-        {
-            $this->setError('A slug is required');
-        }
-        
-        if ($existing = $this->slugExists($this->slug))
-        {
-            if (empty($this->id)||$existing->id!=$this->id)
-            {
-                // An item with this slug already exists. Slugs must be unique.
-                $this->slug = $this->generateSlug();
-            }
-        }
-        
-        return parent::validate();
+        return parent::beforeValidate();
     }
 
     protected function beforeSave()
     {
-        $this->publishableBeforeSave();
+      
         
         return parent::beforeSave();
     }
     
-    /**
-     * 
-     * @param unknown $query
-     */
-    public static function distinctTags($query=array())
+    protected function beforeUpdate()
     {
-        $query = $query + array(
-        	'type' => (new static)->type()
-        );
-        
-        return parent::distinctTags($query);
-    }
+    	$this->ancestorsBeforeUpdate();
     
-    /**
-     * This method returns an abstract of this content item.
-     * Description field is given priority, after which the first paragraph is extracted.
-     * If all else fails, return the copy.
-     * 
-     */
-    public function getAbstract()
+    	return parent::beforeUpdate();
+    }
+
+    protected function afterUpdate()
     {
-        $abstract = $this->description;
+    	$this->ancestorsAfterUpdate();
     
-        if (empty($abstract))
-        {
-            $abstract = $this->{'copy'};
-    
-            preg_match('%(<p[^>]*>.*?</p>)%i', $this->{'copy'}, $regs);
-            if (count($regs))
-            {
-                $abstract = $regs[1];
-            }
-        }
-    
-        return $abstract;
+    	return parent::afterUpdate();
     }
-    
 }

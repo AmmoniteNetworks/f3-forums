@@ -15,4 +15,4 @@ class ForumsBootstrap extends \Dsc\Bootstrap{
 		parent::runSite();
 	}
 }
-$app = new CrmBootstrap();
+$app = new ForumsBootstrap();
